@@ -42,11 +42,16 @@ def test_user_registration(page):
     # Step 4: Enter verification code
     register_page.enter_verification_code(code)
     register_page.send_verification_code()
-    # register_page.click_verify()
-
-
+    
+    # Generate unique EA ID
+    ea_id = register_page.generate_unique_ea_id()
+    register_page.enter_ea_id(ea_id)
+    register_page.enter_password("Test@123")
+    register_page.click_terms_and_conditions()
+    register_page.click_create_account()
+    register_page.click_finish()
+    register_page.click_next_to_login("Next")
     # Cleanup
     webhook.delete_requests(uuid)
     webhook.delete_token(uuid)
 
-    # assert page.url == "https://www.pogo.com/register

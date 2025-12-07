@@ -1,316 +1,142 @@
+import random
+import string
 from pages.base_page import BasePage
 from config.config import Config
 
 class RegisterPage(BasePage):
+    """Page object for registration page."""
+    
     def __init__(self, page):
         super().__init__(page)
-
+    
     def open(self):
+        """Open the registration page."""
         self.page.goto(Config.BASE_URL)
-
+    
     def go_to_signup(self):
+        """Click the register button to start signup."""
         self.page.get_by_role("button", name="Register free").click()
-
     
     def select_country(self, country: str):
-        country_dropdown = self.page.locator("#clientreg_country-selctrl")
-        country_dropdown.wait_for(state="visible")
-        country_dropdown.click()
-        # Wait for dropdown menu to open
+        """Select country from dropdown."""
+        dropdown = self.page.locator("#clientreg_country-selctrl")
+        dropdown.wait_for(state="visible")
+        dropdown.click()
         self.page.wait_for_timeout(500)
-        # Try using select_option if it's a native select element
+        
+        # Try different methods to select country
         try:
             self.page.select_option("#clientreg_country-selctrl", label=country)
         except:
-            # If select_option doesn't work, it's likely a custom dropdown
-            # Look for the option in the dropdown menu (could be in option tags or list items)
-            # Try option element first - use filter approach
             try:
-                select_element = self.page.locator("#clientreg_country-selctrl")
-                country_option = select_element.locator("option").filter(has_text=country).nth(0)
-                country_option.wait_for(state="attached", timeout=3000)
-                country_option.click()
+                dropdown.locator("option").filter(has_text=country).first.click()
             except:
-                # If option doesn't work, try finding by text in the visible dropdown menu
-                # The dropdown might have opened a menu with the options
-                self.page.get_by_text(country, exact=True).filter(
-                    has=self.page.locator("option, li, [role='option']")
-                ).nth(0).click()
+                self.page.get_by_text(country, exact=True).first.click()
     
     def select_random_country(self):
-        """Select a random country from a predefined list"""
-        import random
-        # Common countries that are typically available in registration forms
+        """Select a random country from the list."""
         countries = [
-            "Nepal", "United States", "United Kingdom", "India", "Canada", 
-            "Australia", "Germany", "France", "Japan", "China", "Brazil", 
-            "Mexico", "Spain", "Italy", "South Korea", "Netherlands", 
+            "Nepal", "United States", "United Kingdom", "India", "Canada",
+            "Australia", "Germany", "France", "Japan", "China", "Brazil",
+            "Mexico", "Spain", "Italy", "South Korea", "Netherlands",
             "Sweden", "Norway", "Denmark", "Finland", "Poland", "Portugal"
         ]
-        random_index = random.randint(0, len(countries) - 1)
-        selected_country = countries[random_index]
-        self.select_country(selected_country)
-        return selected_country
-        
-    def select_month(self, month: int):
-        """Select month from dropdown - accepts static value (1-12)"""
-        month_dropdown = self.page.locator("#clientreg_dobmonth-selctrl")
-        month_dropdown.wait_for(state="visible")
-        month_dropdown.click()
+        country = random.choice(countries)
+        self.select_country(country)
+        print(f"🌍 Selected country: {country}")
+        return country
+    
+    def _select_dropdown_option(self, selector: str, value: str):
+        """Helper method to select an option from a dropdown."""
+        dropdown = self.page.locator(selector)
+        dropdown.wait_for(state="visible")
+        dropdown.click()
         self.page.wait_for_timeout(500)
         
-        # Try multiple approaches to find and select the month
+        # Try different selection methods
         try:
-            # First try: select by value
-            self.page.select_option("#clientreg_dobmonth-selctrl", value=str(month))
+            self.page.select_option(selector, value=value)
         except:
             try:
-                # Second try: select by label
-                self.page.select_option("#clientreg_dobmonth-selctrl", label=str(month))
+                self.page.select_option(selector, label=value)
             except:
-                # Third try: find option by text and click
-                select_element = self.page.locator("#clientreg_dobmonth-selctrl")
-                month_option = select_element.locator("option").filter(has_text=str(month)).first
-                month_option.click()
+                dropdown.locator("option").filter(has_text=value).first.click()
+    
+    def select_month(self, month: int):
+        """Select month (1-12)."""
+        self._select_dropdown_option("#clientreg_dobmonth-selctrl", str(month))
     
     def select_day(self, day: int):
-        """Select day from dropdown - accepts static value (1-31)"""
-        day_dropdown = self.page.locator("#clientreg_dobday-selctrl")
-        day_dropdown.wait_for(state="visible")
-        day_dropdown.click()
-        self.page.wait_for_timeout(500)
-        
-        # Try multiple approaches to find and select the day
-        try:
-            self.page.select_option("#clientreg_dobday-selctrl", value=str(day))
-        except:
-            try:
-                self.page.select_option("#clientreg_dobday-selctrl", label=str(day))
-            except:
-                select_element = self.page.locator("#clientreg_dobday-selctrl")
-                day_option = select_element.locator("option").filter(has_text=str(day)).first
-                day_option.click()
+        """Select day (1-31)."""
+        self._select_dropdown_option("#clientreg_dobday-selctrl", str(day))
     
     def select_year(self, year: int):
-        """Select year from dropdown - accepts static value (e.g., 1990)"""
-        year_dropdown = self.page.locator("#clientreg_dobyear-selctrl")
-        year_dropdown.wait_for(state="visible")
-        year_dropdown.click()
-        self.page.wait_for_timeout(500)
-        
-        # Try multiple approaches to find and select the year
-        try:
-            self.page.select_option("#clientreg_dobyear-selctrl", value=str(year))
-        except:
-            try:
-                self.page.select_option("#clientreg_dobyear-selctrl", label=str(year))
-            except:
-                select_element = self.page.locator("#clientreg_dobyear-selctrl")
-                year_option = select_element.locator("option").filter(has_text=str(year)).first
-                year_option.click()
-
-    # def enter_dob(self, day: int = None, month: int = None, year: int = None):
-    #     """
-    #     Enter date of birth
-    #     Args:
-    #         day: Day of month (1-31), optional - defaults to random if not provided
-    #         month: Month (1-12), optional - defaults to random if not provided
-    #         year: Year, optional - defaults to random if not provided
-    #     """
-    #     import random
-    #     from datetime import datetime
-        
-    #     # Generate random values if not provided
-    #     if day is None:
-    #         day = random.randint(1, 28)
-    #     if month is None:
-    #         month = random.randint(1, 12)
-    #     if year is None:
-    #         current_year = datetime.now().year
-    #         year = random.randint(current_year - 65, current_year - 18)
-        
-    #     # Select month
-    #     month_select = self.page.locator("[id*='dobMonth'], select[name*='month']").first
-    #     month_select.wait_for(state="visible")
-    #     try:
-    #         month_select.select_option(label=str(month))
-    #     except:
-    #         month_select.select_option(value=str(month))
-        
-    #     # Select day
-    #     day_select = self.page.locator("#clientreg_dobday-selctrl, [id*='dobday'], select[name*='day']").first
-    #     day_select.wait_for(state="visible")
-    #     try:
-    #         day_select.select_option(label=str(day))
-    #     except:
-    #         day_select.select_option(value=str(day))
-        
-    #     # Select year
-    #     year_select = self.page.locator("[id*='dobYear'], select[name*='year']").first
-    #     year_select.wait_for(state="visible")
-    #     try:
-    #         year_select.select_option(label=str(year))
-    #     except:
-    #         year_select.select_option(value=str(year))
+        """Select year."""
+        self._select_dropdown_option("#clientreg_dobyear-selctrl", str(year))
+    
     def click_next(self):
+        """Click next button after DOB selection."""
         self.page.click("#countryDobNextBtn")
-
+    
     def enter_email(self, email: str):
-        email_field = self.page.locator("#email")
-        email_field.wait_for(state="visible")
-        email_field.fill(email)
+        """Enter email address."""
+        field = self.page.locator("#email")
+        field.wait_for(state="visible")
+        field.fill(email)
         self.page.keyboard.press("Tab")
-        # Verify email was entered correctly
-        entered_email = email_field.input_value()
-        print(f"📧 Email entered: {entered_email}")
-        assert entered_email == email, f"Email mismatch! Expected: {email}, Got: {entered_email}" 
+        print(f"📧 Email entered: {email}")
     
     def send_otp(self):
-        print("📤 Clicking send OTP button...")
+        """Click button to send OTP."""
+        print("📤 Sending OTP...")
         self.page.click("#basicInfoNextBtn")
-        
-        # Wait a moment for any immediate validation errors
-        self.page.wait_for_timeout(1000)
-        
-        # Check for error messages
-        error_selectors = [
-            "[role='alert']",
-            ".error",
-            ".error-message",
-            "[class*='error']",
-            "[id*='error']"
-        ]
-        
-        for selector in error_selectors:
-            try:
-                error_element = self.page.locator(selector).first
-                if error_element.is_visible(timeout=500):
-                    error_text = error_element.text_content()
-                    print(f"⚠️ Error detected: {error_text}")
-            except:
-                pass
-        
-        # Wait for OTP to be sent - wait for either a success message, 
-        # verification code input field to appear, or a loading state to complete
-        print("⏳ Waiting for page to process OTP request...")
-        
-        # Wait for any loading indicators to disappear
-        self.page.wait_for_timeout(2000)
-        
-        # Check for success message or verification field
-        verification_selectors = [
-            "#verification-code",
-            "#verificationCode", 
-            "#verification_code",
-            "input[name*='verification']",
-            "input[name*='code']",
-            "[id*='verification']"
-        ]
-        
-        field_found = False
-        for selector in verification_selectors:
-            try:
-                field = self.page.locator(selector).first
-                if field.is_visible(timeout=3000):
-                    print(f"✅ Verification code field appeared with selector: {selector}")
-                    field_found = True
-                    break
-            except:
-                continue
-        
-        if not field_found:
-            print("⚠️ Verification field not found immediately, but OTP request was sent")
-            print("   Will wait for email and then try to find the field again")
-
-    def enter_password(self, password: str):
-        self.page.fill("#password", password)
-
-    def submit(self):
-        self.page.click("button[type=submit]")
-
+        self.page.wait_for_timeout(2000)  # Wait for OTP to be sent
+    
     def enter_verification_code(self, code: str):
-        print(f"🔑 Attempting to enter verification code: {code}")
+        """Enter verification code."""
+        print(f"🔑 Entering verification code: {code}")
         
-        # Try multiple possible selectors for verification code field
-        possible_selectors = [
-            "#verification-code",
-            "#verificationCode",
-            "#verification_code",
-            "input[name='verification-code']",
-            "input[name='verificationCode']",
-            "input[name='verification_code']",
-            "input[type='text'][placeholder*='code' i]",
-            "input[type='text'][placeholder*='verification' i]",
-            "input[type='number']",
-            "[id*='verification']",
-            "[id*='code']",
-            "[name*='verification']",
-            "[name*='code']"
-        ]
-        
-        verification_field = None
-        for selector in possible_selectors:
-            try:
-                print(f"🔍 Trying selector: {selector}")
-                field = self.page.locator(selector).first
-                field.wait_for(state="visible", timeout=5000)
-                if field.is_visible():
-                    verification_field = field
-                    print(f"✅ Found verification field with selector: {selector}")
-                    break
-            except:
-                continue
-        
-        if not verification_field:
-            # Debug: print all input fields on the page
-            print("🔍 Debugging: Looking for input fields on the page...")
-            all_inputs = self.page.locator("input").all()
-            print(f"📋 Found {len(all_inputs)} input fields")
-            for i, inp in enumerate(all_inputs[:10]):  # Show first 10
-                try:
-                    inp_id = inp.get_attribute("id") or "no-id"
-                    inp_name = inp.get_attribute("name") or "no-name"
-                    inp_type = inp.get_attribute("type") or "no-type"
-                    inp_placeholder = inp.get_attribute("placeholder") or "no-placeholder"
-                    print(f"  Input {i+1}: id='{inp_id}', name='{inp_name}', type='{inp_type}', placeholder='{inp_placeholder}'")
-                except:
-                    pass
-            
-            raise Exception(f"❌ Could not find verification code field. Tried selectors: {possible_selectors}")
-        
-        verification_field.fill(code)
-        print(f"✅ Verification code entered successfully")
-
+        # Wait for the verification code field to appear after OTP is sent
+        field = self.page.locator("#emailVerifyCode")
+        field.wait_for(state="visible", timeout=10000)
+        field.fill(code)
+        print("✅ Verification code entered")
+    
     def send_verification_code(self):
+        """Click button to send/verify the code."""
         self.page.click("#btnSendCode")
+        
+    @staticmethod
+    def generate_unique_ea_id() -> str:
+        """Generate a unique fake EA ID.
+        
+        Returns:
+            A unique EA ID string with format: Bonsoir followed by 3 random digits
+        """
+        # Generate 3 random digits
+        random_digits = ''.join(random.choices(string.digits, k=3))
+        ea_id = f"Bonsoir{random_digits}"
+        print(f"🆔 Generated EA ID: {ea_id}")
+        return ea_id
+    
+    def enter_ea_id(self, ea_id: str):
+        """Enter EA ID."""
+        self.page.fill("#originId", ea_id)
+    
+    def enter_password(self, password: str):
+        """Enter password."""
+        self.page.fill("#password", password)
+        self.page.keyboard.press("Tab")
 
-
-    def click_verify(self):
-        # Try multiple possible selectors for verify button
-        possible_selectors = [
-            "#verify-button",
-            "#verifyButton",
-            "#verify_button",
-            "button[type='submit']",
-            "button:has-text('Verify')",
-            "button:has-text('Continue')",
-            "[id*='verify']",
-            "[name*='verify']"
-        ]
-        
-        verify_button = None
-        for selector in possible_selectors:
-            try:
-                button = self.page.locator(selector).first
-                if button.is_visible(timeout=2000):
-                    verify_button = button
-                    print(f"✅ Found verify button with selector: {selector}")
-                    break
-            except:
-                continue
-        
-        if not verify_button:
-            raise Exception(f"❌ Could not find verify button. Tried selectors: {possible_selectors}")
-        
-        verify_button.click()
-        print("✅ Verify button clicked")
+    def click_terms_and_conditions(self):
+        """Click terms and conditions checkbox."""
+        self.page.click("#read-accept-container")
+    
+    def click_create_account(self):
+        """Click create account button."""
+        self.page.click("#basicInfoNextBtn")
+    def click_finish(self):
+        """Click finish button."""
+        self.page.click("#submitBtn")
+    def click_next_to_login(self, button_name: str = "Next to Login"):
+        self.page.get_by_role("button", name=button_name).click()

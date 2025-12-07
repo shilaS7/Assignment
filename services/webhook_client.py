@@ -45,7 +45,7 @@ class WebhookClient:
 
     
     # Fetch verification code from email
-    def wait_for_code(self, uuid: str, timeout_ms=60000) -> str:
+    def wait_for_code(self, uuid: str, timeout_ms=15000) -> str:
         CODE_REGEX = re.compile(r"\b(\d{6})\b")  # adjust if different format
 
         max_retries = DEFAULT_RETRY

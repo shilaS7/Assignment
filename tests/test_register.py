@@ -28,15 +28,21 @@ def test_user_registration(page):
     
     register_page.enter_email(test_email)
     register_page.send_otp()
+    
     # register_page.enter_password("Password123!")
     # register_page.submit()
 
     # Step 3: Fetch code from webhook inbox
     code = webhook.wait_for_code(uuid)
+    
+    # Wait a moment for the page to be ready for verification code entry
+    import time
+    time.sleep(2)
 
     # Step 4: Enter verification code
     register_page.enter_verification_code(code)
-    register_page.click_verify()
+    register_page.send_verification_code()
+    # register_page.click_verify()
 
 
     # Cleanup

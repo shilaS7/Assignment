@@ -33,7 +33,8 @@ class WebhookClient:
         data = response.json()
         uuid = data["uuid"]
         # email_domain="emailhook.site"  # MUST use this
-        test_email = f"{alias}+{uuid}@{os.getenv('EMAIL_HOOK_URL')}"
+        # For webhook.site email inboxes, use just UUID@emailhook.site format
+        test_email = f"{uuid}@{os.getenv('EMAIL_HOOK_URL')}"
 
         print(f"UUID: {uuid}")
         print(f"Alias: {alias}")
@@ -44,11 +45,15 @@ class WebhookClient:
 
     
     # Fetch verification code from email
-    def wait_for_code(self, uuid: str, timeout_ms=15000) -> str:
+    def wait_for_code(self, uuid: str, timeout_ms=60000) -> str:
         CODE_REGEX = re.compile(r"\b(\d{6})\b")  # adjust if different format
 
         max_retries = DEFAULT_RETRY
         interval = timeout_ms / max_retries / 1000
+
+        # Initial delay to allow email to be sent
+        print(f"⏳ Waiting {interval:.1f}s before checking for emails...")
+        time.sleep(interval)
 
         for attempt in range(max_retries):
             print(f"🔄 Checking email (Attempt {attempt+1}/{max_retries})")
@@ -58,11 +63,96 @@ class WebhookClient:
             )
             assert res.status == 200, f"Expected status 200, got {res.status}"
 
-            emails = res.json().get("data", [])
-            print(f"📬 Emails received: {len(emails)}")
+            response_data = res.json()
+            emails = response_data.get("data", [])
+            print(f"📬 Requests/Emails received: {len(emails)}")
+
+            # Debug: print full response structure on first attempt if no emails
+            if attempt == 0 and len(emails) == 0:
+                print(f"🔍 Response keys: {list(response_data.keys())}")
+                print(f"🔍 Full response: {str(response_data)[:500]}...")
 
             for email in emails:
-                text = email.get("text_content", "")
+                # Debug: print request structure for first request
+                if attempt == 0:
+                    print(f"🔍 Request keys: {list(email.keys())}")
+                    if "headers" in email:
+                        content_type = email.get("headers", {}).get("content-type", [])
+                        print(f"🔍 Content-Type: {content_type}")
+                    if "content" in email:
+                        print(f"🔍 Request content type: {type(email.get('content'))}")
+                
+                # Check multiple possible fields for email content
+                text = ""
+                
+                # For webhook.site, email data might be in the request body
+                # Try to get the raw content first
+                raw_content = email.get("content", "")
+                if raw_content:
+                    # Try to parse as JSON if it's a string
+                    if isinstance(raw_content, str):
+                        try:
+                            import json
+                            parsed = json.loads(raw_content)
+                            if isinstance(parsed, dict):
+                                # Email data might be in parsed JSON
+                                raw_content = parsed
+                        except:
+                            pass
+                    
+                    # If content is a dict, extract email fields
+                    if isinstance(raw_content, dict):
+                        text = (raw_content.get("text") or 
+                               raw_content.get("text_content") or
+                               raw_content.get("body") or
+                               raw_content.get("message") or
+                               "")
+                
+                # Try different possible field names directly on email object
+                if not text:
+                    possible_fields = [
+                        "text_content", 
+                        "html_content", 
+                        "content", 
+                        "body",
+                        "text",
+                        "message"
+                    ]
+                    
+                    for field in possible_fields:
+                        if field in email and email[field]:
+                            field_value = email[field]
+                            if isinstance(field_value, str):
+                                text = field_value
+                            elif isinstance(field_value, dict):
+                                text = str(field_value.get("text", "") or field_value.get("html", ""))
+                            else:
+                                text = str(field_value)
+                            if text:
+                                break
+                
+                # If still no text, try to get raw body from nested structures
+                if not text:
+                    # Check if there's a nested body or content structure
+                    if "body" in email and isinstance(email["body"], dict):
+                        text = str(email["body"].get("text", "") or email["body"].get("html", ""))
+                    elif "content" in email and isinstance(email["content"], dict):
+                        text = str(email["content"].get("text", "") or email["content"].get("html", ""))
+                
+                # Also check query parameters or form data
+                if not text:
+                    query = email.get("query", {})
+                    if isinstance(query, dict):
+                        text = str(query.get("text", "") or query.get("body", "") or query.get("message", ""))
+                
+                # Debug: print email structure for first email
+                if attempt == 0 and len(emails) > 0:
+                    print(f"🔍 Email keys: {list(email.keys())}")
+                    if text:
+                        print(f"🔍 Email text preview: {text[:300]}...")
+                    else:
+                        print(f"🔍 Full email structure: {str(email)[:500]}...")
+                
                 match = CODE_REGEX.search(text)
 
                 if match:

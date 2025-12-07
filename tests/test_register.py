@@ -28,19 +28,30 @@ def test_user_registration(page):
     
     register_page.enter_email(test_email)
     register_page.send_otp()
+    
     # register_page.enter_password("Password123!")
     # register_page.submit()
 
     # Step 3: Fetch code from webhook inbox
     code = webhook.wait_for_code(uuid)
+    
+    # Wait a moment for the page to be ready for verification code entry
+    import time
+    time.sleep(2)
 
     # Step 4: Enter verification code
     register_page.enter_verification_code(code)
-    register_page.click_verify()
-
-
+    register_page.send_verification_code()
+    
+    # Generate unique EA ID
+    ea_id = register_page.generate_unique_ea_id()
+    register_page.enter_ea_id(ea_id)
+    register_page.enter_password("Test@123")
+    register_page.click_terms_and_conditions()
+    register_page.click_create_account()
+    register_page.click_finish()
+    register_page.click_next_to_login("Next")
     # Cleanup
     webhook.delete_requests(uuid)
     webhook.delete_token(uuid)
 
-    # assert page.url == "https://www.pogo.com/register

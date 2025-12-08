@@ -125,7 +125,7 @@ class RegisterPage(BasePage):
     
     def enter_password(self, password: str):
         """Enter password."""
-        self.page.type("#password", password)
+        self.page.fill("#password", password)
         self.page.keyboard.press("Tab")
 
     def click_terms_and_conditions(self):

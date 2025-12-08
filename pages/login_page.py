@@ -19,7 +19,9 @@ class LoginPage(BasePage):
         self.page.click("#logInBtn")
     
     def enter_password(self, password: str):
-        self.page.fill("#password", password)
+        self.page.type("#password", password,delay=100)
+        print(f"Typed password: {password}")
+        self.page.keyboard.press("Tab")
     
     # def login(self, username: str, password: str):
     #     self.page.fill(self.username_field, username)

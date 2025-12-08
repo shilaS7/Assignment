@@ -3,7 +3,6 @@ from pages.login_page import LoginPage
 from pages.search_page import SearchPage
 
 def test_search(page):
-    """Test search functionality after login."""
     # Get credentials from environment variables
     email = os.getenv('USERNAME') or os.getenv('EMAIL')
     password = os.getenv('PASSWORD')
@@ -20,29 +19,22 @@ def test_search(page):
     login_page.go_to_login()
     login_page.enter_email(email)
     login_page.click_next()
-    
-    # Wait for password field to appear (indicates email was accepted)
     try:
         login_page.page.locator("#password").wait_for(state="visible", timeout=5000)
     except:
-        # If password field doesn't appear, there might be an error
         pass
     
     login_page.enter_password(password)
     login_page.click_next()
-    
-    # Wait for login to complete and page to load
     page.wait_for_timeout(3000)
     
-    # Now perform search after login
+    # Perform search after login
     search_query = "Solitaire"
     search_page = SearchPage(page)
     actual_results = search_page.search(search_query)
     
-
     # Expected result text
     expected_result = f"Search Results for \"{search_query}\""
-    
     # Get actual result text for comparison
     if actual_results:
         actual_text = actual_results if isinstance(actual_results, str) else str(actual_results)
@@ -58,7 +50,6 @@ def test_search(page):
         except:
             actual_text = "Unable to retrieve page content"
     
-    # Format actual text for display (limit length)
     display_actual = actual_text[:300] + "..." if len(actual_text) > 300 else actual_text
     
     # Assert that expected text is in actual results

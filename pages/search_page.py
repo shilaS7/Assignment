@@ -5,8 +5,6 @@ class SearchPage(BasePage):
         super().__init__(page)
 
     def search(self, query: str):
-        """Perform a search query."""
-        # Try to find search field by placeholder (most reliable for "Search games")
         try:
             search_field = self.page.get_by_placeholder("Search games").first
             search_field.wait_for(state="visible", timeout=10000)
@@ -26,12 +24,8 @@ class SearchPage(BasePage):
         search_field.click()
         search_field.fill(query)
         search_field.press("Enter")
-        
-        # Wait for search results to load
+
         self.page.wait_for_timeout(3000)
-        
-        # Try to get the search results text
-        # Look for common patterns like "Search Results for 'query'"
         try:
             # Try to find the results heading/text
             results_text = None
@@ -52,12 +46,10 @@ class SearchPage(BasePage):
                             return results_text.strip()
                 except:
                     continue
-            
-            # If no specific results text found, get page title or main content
+
             try:
                 page_text = self.page.text_content("body") or ""
                 if f"Search Results for" in page_text or f"search results for" in page_text:
-                    # Extract the relevant part
                     if query.lower() in page_text.lower():
                         return page_text
             except:
@@ -68,7 +60,6 @@ class SearchPage(BasePage):
             return None
     
     def is_play_button_available(self, timeout=5000):
-        """Check if play button is available on search results page."""
         # Try multiple selectors to find the play button/link
         play_button_selectors = [
             # Link with "Play" text
@@ -100,8 +91,6 @@ class SearchPage(BasePage):
                     return True, info
             except:
                 continue
-        
-        # If no specific play button found, check if any link exists in search results
         try:
             # Wait a bit more for results to load
             self.page.wait_for_timeout(1000)

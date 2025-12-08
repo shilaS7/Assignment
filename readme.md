@@ -1,5 +1,5 @@
-Setup and Run Locally
-</br>Step 1: Clone the repository
+Setup and Run Locally</br>
+Step 1: Clone the repository
         </br> git clone <Repo URL>
         </br> cd <Project folder name>
         </br>https://github.com/shilaS7/Assignment.git

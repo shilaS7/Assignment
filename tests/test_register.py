@@ -51,6 +51,7 @@ def test_user_registration(page):
     register_page.click_create_account()
     register_page.click_finish()
     register_page.click_next_to_login("Next")
+    time.sleep(5)
     # Cleanup
     webhook.delete_requests(uuid)
     webhook.delete_token(uuid)

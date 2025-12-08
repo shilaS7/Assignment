@@ -24,7 +24,8 @@ def test_should_login_successfully_with_valid_credentials(page):
     login_page.click_next()
     login_page.enter_password(os.getenv('PASSWORD'))
     login_page.click_next()
-
+    page.wait_for_timeout(5000)
+    login_page.validation_tooltip_pogime()
     # Validate redirection
     # assert expected_logged_in_url in page.url
 

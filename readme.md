@@ -1,8 +1,8 @@
 Setup and Run Locally</br>
 Step 1: Clone the repository
-        </br> git clone <Repo URL>
-        </br> cd <Project folder name>
-        </br>https://github.com/shilaS7/Assignment.git
+        </br> git clone "<Repo URL>"
+        </br> cd "<Project folder name>"
+        </br>Example: git clone https://github.com/shilaS7/Assignment.git
 
 Step 2: Create a Virtual Environment
     </br>Mac/linux

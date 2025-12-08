@@ -1,5 +1,5 @@
 Setup and Run Locally
-Step 1: Clone the repository
+</br>Step 1: Clone the repository
         </br> git clone <Repo URL>
         </br> cd <Project folder name>
         </br>https://github.com/shilaS7/Assignment.git
@@ -24,12 +24,12 @@ Step 6: Run Tests Locally
     ⚠️ Make sure your virtual environment is activated first!
     
     pytest
-    </br>Run tests in headed mode (Browser Visible)
-    </br>pytest --headed
-    </br>Generate HTML Report
-    </br>pytest --html=report.html
+    Run tests in headed mode (Browser Visible)
+    pytest --headed
+    Generate HTML Report
+    pytest --html=report.html
 
-    </br>pytest tests/test_register.py --headed --html=report.html
-    </br>pytest tests/test_login.py --headed --html=report.html  
-    </br>pytest tests/test_search.py --headed --html=report.html  
-    </br>pytest tests/test_signout.py --headed --html=report.html
+    pytest tests/test_register.py --headed --html=report.html
+    pytest tests/test_login.py --headed --html=report.html  
+    pytest tests/test_search.py --headed --html=report.html  
+    pytest tests/test_signout.py --headed --html=report.html

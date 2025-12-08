@@ -23,7 +23,7 @@ class LoginPage(BasePage):
         print(f"Typed password: {password}")
         self.page.keyboard.press("Tab")
 
-    def validation_tooltip_pogime(self):
+    def validation_tooltip_message_menu(self):
         tooltip_element = self.page.locator("#clubBenefitsFTUE4")
         tooltip_element.wait_for(state="visible", timeout=10000)
         tooltip_element.hover()

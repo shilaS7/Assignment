@@ -1,13 +1,3 @@
-# from pages.login_page import LoginPage
-
-# def test_login(page):
-#     login_page = LoginPage(page)
-#     login_page.open()
-#     login_page.login(Config.USERNAME, Config.PASSWORD)
-
-#     # assert page.url == "https://www.pogo.com/"
-#     # pass
-
 import os
 from pages.login_page import LoginPage
 
@@ -27,7 +17,7 @@ def test_should_login_successfully_with_valid_credentials(page):
     page.wait_for_timeout(5000)
     
     # Validate tooltip
-    actual_tooltip = login_page.validation_tooltip_pogime()
+    actual_tooltip = login_page.validation_tooltip_message_menu()
     expected_tooltip = "Message & Gift Inbox"
     
     print(f"\n{'='*60}")
@@ -48,7 +38,5 @@ def test_should_login_successfully_with_valid_credentials(page):
     
     print(f"✅ Tooltip validation passed!")
     
-    # Validate redirection
-    # assert expected_logged_in_url in page.url
 
   
